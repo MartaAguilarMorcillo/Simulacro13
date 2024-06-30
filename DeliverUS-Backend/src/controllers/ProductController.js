@@ -107,12 +107,39 @@ const popular = async function (req, res) {
   }
 }
 
+// SOLUCIÓN
+const pinProduct = async function (req, res) {
+  try {
+    const product = await Product.findByPk(req.params.productId)
+    const products = await Product.findAll({
+      where: {
+        restaurantId: product.restaurantId,
+        pinned: true
+      },
+      order: [['pinnedAt', 'ASC']]
+    })
+    if (products.length >= 5) {
+      const unpinnedProduct = products[0]
+      await Product.update({ pinned: false }, { where: { id: unpinnedProduct.id } })
+      await Product.update({ pinnedAt: null }, { where: { id: unpinnedProduct.id } })
+    }
+    await Product.update({ pinned: true }, { where: { id: req.params.productId } })
+    await Product.update({ pinnedAt: new Date() }, { where: { id: req.params.productId } })
+
+    const updatedProduct = await Product.findByPk(req.params.productId)
+    res.json(updatedProduct)
+  } catch (err) {
+    res.status(500).send(err)
+  }
+}
+
 const ProductController = {
   indexRestaurant,
   show,
   create,
   update,
   destroy,
-  popular
+  popular,
+  pinProduct
 }
 export default ProductController

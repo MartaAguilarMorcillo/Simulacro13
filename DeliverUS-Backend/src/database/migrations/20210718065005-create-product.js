@@ -57,6 +57,16 @@ module.exports = {
         allowNull: false,
         type: Sequelize.DATE,
         defaultValue: new Date()
+      },
+      // SOLUCIÓN
+      pinned: {
+        type: Sequelize.BOOLEAN,
+        defaultValue: false
+      },
+      // SOLUCIÓN
+      pinnedAt: {
+        allowNull: true,
+        type: Sequelize.DATE
       }
     })
   },

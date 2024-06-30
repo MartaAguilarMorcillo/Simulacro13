@@ -47,27 +47,33 @@ const create = async function (req, res) {
   }
 }
 
+// SOLUCIÓN
 const show = async function (req, res) {
   // Only returns PUBLIC information of restaurants
   try {
-    const restaurant = await Restaurant.findByPk(req.params.restaurantId, {
-      attributes: { exclude: ['userId'] },
-      include: [{
-        model: Product,
-        as: 'products',
-        include: { model: ProductCategory, as: 'productCategory' }
-      },
-      {
-        model: RestaurantCategory,
-        as: 'restaurantCategory'
-      }],
-      order: [[{ model: Product, as: 'products' }, 'order', 'ASC']]
-    }
-    )
+    const restaurant = await pinnedProducts(req)
     res.json(restaurant)
   } catch (err) {
     res.status(500).send(err)
   }
+}
+
+// SOLUCIÓN
+const pinnedProducts = async function (req) {
+  return await Restaurant.findByPk(req.params.restaurantId, {
+    attributes: { exclude: ['userId'] },
+    include: [{
+      model: Product,
+      as: 'products',
+      include: { model: ProductCategory, as: 'productCategory' }
+    },
+    {
+      model: RestaurantCategory,
+      as: 'restaurantCategory'
+    }],
+    order: [[{ model: Product, as: 'products' }, 'pinned', 'DESC'], [{ model: Product, as: 'products' }, 'pinnedAt', 'ASC']]
+  }
+  )
 }
 
 const update = async function (req, res) {

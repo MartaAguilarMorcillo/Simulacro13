@@ -26,7 +26,17 @@ const loadModel = (sequelize, DataTypes) => {
     order: DataTypes.INTEGER,
     availability: DataTypes.BOOLEAN,
     restaurantId: DataTypes.INTEGER,
-    productCategoryId: DataTypes.INTEGER
+    productCategoryId: DataTypes.INTEGER,
+    // SOLUCIÓN
+    pinned: {
+      type: DataTypes.BOOLEAN,
+      defaultValue: false
+    },
+    // SOLUCIÓN
+    pinnedAt: {
+      allowNull: true,
+      type: DataTypes.DATE
+    }
   }, {
     sequelize,
     modelName: 'Product'

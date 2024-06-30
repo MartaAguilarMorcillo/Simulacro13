@@ -21,7 +21,8 @@ export default function EditProductScreen ({ navigation, route }) {
   const [backendErrors, setBackendErrors] = useState()
   const [product, setProduct] = useState({})
 
-  const [initialProductValues, setInitialProductValues] = useState({ name: null, description: null, price: null, order: null, productCategoryId: null, availability: null, image: null })
+  // SOLUCIÓN
+  const [initialProductValues, setInitialProductValues] = useState({ name: null, description: null, price: null, order: null, productCategoryId: null, availability: null, image: null, pinned: false })
   const validationSchema = yup.object().shape({
     name: yup
       .string()
@@ -42,7 +43,10 @@ export default function EditProductScreen ({ navigation, route }) {
       .number()
       .positive()
       .integer()
-      .required('Product category is required')
+      .required('Product category is required'),
+    // SOLUCIÓN
+    pinned: yup
+      .boolean()
   })
 
   useEffect(() => {
@@ -172,6 +176,18 @@ export default function EditProductScreen ({ navigation, route }) {
                 }
               />
               <ErrorMessage name={'availability'} render={msg => <TextError>{msg}</TextError> }/>
+
+              <TextRegular>Do you want to highlight the product?</TextRegular>
+              <Switch
+              // SOLUCIÓN
+                trackColor={{ false: GlobalStyles.brandSecondary, true: GlobalStyles.brandPrimary }}
+                thumbColor={values.pinned ? GlobalStyles.brandSecondary : '#f4f3f4'}
+                value={values.pinned}
+                style={styles.switch}
+                onValueChange={value =>
+                  setFieldValue('pinned', value)
+                }
+              />
 
               <Pressable onPress={() =>
                 pickImage(

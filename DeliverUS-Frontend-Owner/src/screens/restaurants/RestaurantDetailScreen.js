@@ -4,7 +4,7 @@ import { StyleSheet, View, FlatList, ImageBackground, Image, Pressable } from 'r
 import { showMessage } from 'react-native-flash-message'
 import { MaterialCommunityIcons } from '@expo/vector-icons'
 import { getDetail } from '../../api/RestaurantEndpoints'
-import { remove } from '../../api/ProductEndpoints'
+import { remove, pinProduct } from '../../api/ProductEndpoints'
 import ImageCard from '../../components/ImageCard'
 import TextRegular from '../../components/TextRegular'
 import TextSemiBold from '../../components/TextSemibold'
@@ -15,6 +15,9 @@ import defaultProductImage from '../../../assets/product.jpeg'
 export default function RestaurantDetailScreen ({ navigation, route }) {
   const [restaurant, setRestaurant] = useState({})
   const [productToBeDeleted, setProductToBeDeleted] = useState(null)
+
+  // SOLUCIÓN
+  const [productToBePinned, setProductToBePinned] = useState(null)
 
   useEffect(() => {
     fetchRestaurantDetail()
@@ -102,6 +105,34 @@ export default function RestaurantDetailScreen ({ navigation, route }) {
             </TextRegular>
           </View>
         </Pressable>
+        <Pressable
+        // SOLUCIÓN
+            onPress={() => { setProductToBePinned(item) }}
+            style={({ pressed }) => [
+              {
+                backgroundColor: pressed
+                  ? GlobalStyles.brandSuccess
+                  : GlobalStyles.brandSuccessTap
+              },
+              styles.actionButton
+            ]}>
+          <View style={[{ flex: 1, flexDirection: 'row', justifyContent: 'center' }]}>
+            <MaterialCommunityIcons name='alert-decagram' color={'white'} size={20}/>
+            <TextRegular textStyle={styles.text}>
+              Pin
+            </TextRegular>
+          </View>
+        </Pressable>
+        {item.pinned &&
+          <View style={[{ flex: 1, flexDirection: 'row', justifyContent: 'center' }]}>
+            <MaterialCommunityIcons name='star-box' color={'yellow'} size={20}/>
+          </View>
+        }
+        {!item.pinned &&
+          <View style={[{ flex: 1, flexDirection: 'row', justifyContent: 'center' }]}>
+            <MaterialCommunityIcons name='star' color={'black'} size={20}/>
+          </View>
+        }
         </View>
       </ImageCard>
     )
@@ -152,6 +183,30 @@ export default function RestaurantDetailScreen ({ navigation, route }) {
     }
   }
 
+  // SOLUCIÓN
+  const productPin = async (product) => {
+    try {
+      await pinProduct(product.id)
+      await fetchRestaurantDetail()
+      setProductToBePinned(null)
+      showMessage({
+        message: `Product ${product.name} succesfully pinned`,
+        type: 'success',
+        style: GlobalStyles.flashStyle,
+        titleStyle: GlobalStyles.flashTextStyle
+      })
+    } catch (error) {
+      console.log(error)
+      setProductToBePinned(null)
+      showMessage({
+        message: `Product ${product.name} could not be pinned`,
+        type: 'error',
+        style: GlobalStyles.flashStyle,
+        titleStyle: GlobalStyles.flashTextStyle
+      })
+    }
+  }
+
   return (
     <View style={styles.container}>
       <FlatList
@@ -167,6 +222,13 @@ export default function RestaurantDetailScreen ({ navigation, route }) {
         onCancel={() => setProductToBeDeleted(null)}
         onConfirm={() => removeProduct(productToBeDeleted)}>
           <TextRegular>If the product belong to some order, it cannot be deleted.</TextRegular>
+      </DeleteModal>
+      <DeleteModal
+        // SOLUCIÓN
+        isVisible={productToBePinned !== null}
+        onCancel={() => setProductToBePinned(null)}
+        onConfirm={() => productPin(productToBePinned)}>
+          <TextRegular>This product is going to be pinned</TextRegular>
       </DeleteModal>
     </View>
   )
@@ -237,12 +299,12 @@ const styles = StyleSheet.create({
     padding: 10,
     alignSelf: 'center',
     flexDirection: 'column',
-    width: '50%'
+    width: '33%'
   },
   actionButtonsContainer: {
     flexDirection: 'row',
     bottom: 5,
-    position: 'absolute',
-    width: '90%'
+    position: 'relative',
+    width: '95%'
   }
 })

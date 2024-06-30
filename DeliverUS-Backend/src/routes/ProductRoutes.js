@@ -44,5 +44,15 @@ const loadFileRoutes = (app) => {
       ProductMiddleware.checkProductHasNotBeenOrdered,
       ProductController.destroy
     )
+
+  // SOLUCIÓN
+  app.route('/products/:productId/pinnedProducts')
+    .patch(
+      isLoggedIn,
+      hasRole('owner'),
+      checkEntityExists(Product, 'productId'),
+      ProductMiddleware.checkProductOwnership,
+      ProductController.pinProduct
+    )
 }
 export default loadFileRoutes
